@@ -39,7 +39,6 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const API_URL = import.meta.env.VITE_API_URL;
 
-
   const generateImagesFromText = async (prompt: string) => {
     setIsLoading(true);
     try {
@@ -56,7 +55,7 @@ function App() {
 
       // adjust according to backend response
       setGeneratedImages(data.similar_images || []);
-    } catch (err) {
+    } catch {
       alert("Text query failed");
     } finally {
       setIsLoading(false);
@@ -80,7 +79,7 @@ function App() {
       // Adjust this to match your backend’s response shape
       setImageAnalysis(data || null);
       setGeneratedImages(data.similar_images || []);
-    } catch (err) {
+    } catch {
       alert("Image analysis failed");
     } finally {
       setIsLoading(false);
