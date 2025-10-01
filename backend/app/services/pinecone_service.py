@@ -1,6 +1,12 @@
 from pinecone import Pinecone, ServerlessSpec
 from app.config import PINECONE_API_KEY, PINECONE_ENV, PINECONE_INDEX
 from app.services import hf_service
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+api_base_url = os.getenv("API_BASE_URL")
+
 
 # Initialize Pinecone client
 pc = Pinecone(api_key=PINECONE_API_KEY)
@@ -30,17 +36,35 @@ def query_similar_images(embedding_vector, top_k=5):
     #     {"id": match["id"], "score": match["score"], "metadata": match.get("metadata")}
     #     for match in res["matches"]
     # ]
+    # base_url = "http://images.cocodataset.org/train2017/"
+    # formatted = []
+    # for match in res["matches"]:
+    #     img_id = int(match["id"])
+    #     # COCO filenames are zero-padded to 12 digits
+    #     filename = f"{img_id:012}.jpg"
+    #     url = f"{base_url}{filename}"
+    #     formatted.append({
+    #         "id": match["id"],
+    #         "score": match["score"],
+    #         "url": url,
+    #         "metadata": match.get("metadata", {})
+    #     })
+    # return formatted
+
     base_url = "http://images.cocodataset.org/train2017/"
     formatted = []
     for match in res["matches"]:
         img_id = int(match["id"])
-        # COCO filenames are zero-padded to 12 digits
         filename = f"{img_id:012}.jpg"
-        url = f"{base_url}{filename}"
+        original_url = f"{base_url}{filename}"
+
+    # Construct the proxied URL for your frontend
+        proxied_url = f"{api_base_url}/api/proxy-image?url={original_url}"
+
         formatted.append({
             "id": match["id"],
             "score": match["score"],
-            "url": url,
+            "url": proxied_url, # Return the proxied URL
             "metadata": match.get("metadata", {})
         })
     return formatted

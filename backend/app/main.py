@@ -67,20 +67,45 @@
 #         raise HTTPException(status_code=404, detail="Image not found")
 #     return StreamingResponse(io.BytesIO(data), media_type="image/png")
 
+# from fastapi import FastAPI
+# from fastapi.middleware.cors import CORSMiddleware
+# from app.routers import detect, predict, vision
+
+# app = FastAPI()
+
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["https://all-in-one-img.vercel.app/"],  # your frontend origin
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+
+# # app.include_router(detect.router, prefix="/api/detect", tags=["detect"])
+# # app.include_router(predict.router, prefix="/api/predict", tags=["predict"])
+# app.include_router(vision.router, prefix="/api", tags=["vision"])
+
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import detect, predict, vision
 
 app = FastAPI()
 
+# Add the local frontend URL for testing purposes
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://imgrag.vercel.app",
+    "https://imgrag-*.vercel.app", # Add this for preview deployments
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # your frontend origin
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# app.include_router(detect.router, prefix="/api/detect", tags=["detect"])
-# app.include_router(predict.router, prefix="/api/predict", tags=["predict"])
 app.include_router(vision.router, prefix="/api", tags=["vision"])

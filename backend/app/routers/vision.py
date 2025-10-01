@@ -1,8 +1,8 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from PIL import Image
-import io, requests
+import io, requests, httpx
 from app.services import yolo_service, clip_service, t5_service, pinecone_service
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 
 router = APIRouter()
 
@@ -42,7 +42,20 @@ async def text_query(q: str = Form(...)):
         "similar_images": similar,
     }
 
-@router.get("/proxy-image/")
-def proxy_image(url: str):
-    r = requests.get(url, stream=True)
-    return StreamingResponse(r.raw, media_type=r.headers.get("content-type"))
+@router.get("/proxy-image")
+async def proxy_image(url: str):
+    if not url.startswith("http://"):
+        raise HTTPException(status_code=400, detail="Invalid URL. Only HTTP URLs are allowed for proxying.")
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, follow_redirects=True)
+            response.raise_for_status() # Raise an exception for bad status codes
+
+        # Return the image data with the correct content type
+        return Response(content=response.content, media_type=response.headers["content-type"])
+
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=502, detail=f"Failed to fetch image from source: {e}")
+    except KeyError:
+        raise HTTPException(status_code=500, detail="Could not determine image content type.")
