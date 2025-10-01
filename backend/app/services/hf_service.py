@@ -16,10 +16,10 @@ def call_hf_image_api(model_id: str, image: Image.Image):
     response.raise_for_status()
     return response.json()
 
-def get_blip_caption(image: Image.Image):
-    # BLIP may still expect a JSON base64 payload, but you can test both.
-    # If needed, use the direct image upload:
-    return call_hf_image_api("Salesforce/blip-image-captioning-base", image)
+# def get_blip_caption(image: Image.Image):
+#     # BLIP may still expect a JSON base64 payload, but you can test both.
+#     # If needed, use the direct image upload:
+#     return call_hf_image_api("Salesforce/blip-image-captioning-base", image)
 
 def get_clip_embedding(image: Image.Image):
     return call_hf_image_api("openai/clip-vit-base-patch32", image)
